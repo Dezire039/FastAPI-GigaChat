@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>GigaChat</title>
+<style>
+body{
+    background: linear-gradient(to right, #87CEEB, #00008B);
+    //overflow: hidden;
+}
+h2 {
+    text-align: center;
+    margin-top: 8%;
+    color: white;
+    font-size: 1.6rem;
+}
+div {
+    text-align: center;
+}
+button {
+    cursor: pointer;
+    border: 2px solid rgba(40, 80, 155, 0.7);
+    border-radius: 5px;
+    background-color: rgba(40, 70, 155, 0.8);
+    color: white;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+button:active {
+    transform: scale(0.9);
+}
+textarea{
+    resize: none;
+    border: 2px rgba(40, 80, 155, 0.7);
+    border-radius: 7px;
+
+}
+textarea:focus, input:focus
+{
+  outline: none;
+  border: 3px solid steelBlue;
+}
+#idQuestion {
+    color: rgba(30, 110, 155, 1);
+    font-size: 1.05rem;
+}
+#idQuestion::placeholder {
+    color: rgba(40, 80, 155, 0.7);
+    text-indent: 3px;
+}
+#idAnswer {
+    color: white;
+    font-size: 1.2rem;
+    margin: 0 auto;
+    word-wrap: break-word;
+    width: 490px;
+    text-align: justify;
+    //text-indent: 1tab;
+}
+#progressBar {
+    margin: 0 auto;
+    display: none;
+}
+
+@keyframes bubble {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    50% { opacity: 1; }
+    100% { transform: translateY(-100%) scale(2); opacity: 0;}
+}
+.bubble {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.6);
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    animation: bubble 4s linear infinite;
+}
+// <div class="bubble" style="margin-left: 40%;" ></div>
+</style>
+</head>
+<body>
+    <h2>Введите вопрос в поле ниже</h2>
+    <div>
+        <p>
+            <textarea id="idQuestion" rows="3" cols="50"
+                      required placeholder="Ваш вопрос здесь"></textarea>
+        </p>
+         <p>
+            <button id="getBtn" style=margin-right:20px; >Получить ответ</button>
+            <button id="resetBtn">Сбросить</button>
+        </p>
+    </div>
+    <div>
+        <p id="idAnswer" ></p>
+    </div>
+    <div>
+        <progress id="progressBar" ></progress>
+    </div>
+
+    <script>
+        async function getAnswer(Question) {
+            document.getElementById("idAnswer").innerText = "";
+            document.getElementById("progressBar").style.display = "block";
+            // отправляет запрос и получаем ответ
+            const response = await fetch("/api/answer", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    question: Question
+                })
+            });
+            document.getElementById("progressBar").style.display = "none";
+            // если запрос прошел нормально
+            if (response.ok === true) {
+                // получаем данные
+                const answer = await response.json();
+                document.getElementById("idAnswer").innerText = "Ответ:  " + answer;
+            }
+        }
+
+        // функция сброс данных формы
+        function reset() {
+            document.getElementById("idQuestion").value =
+            document.getElementById("idAnswer").innerText = "";
+        }
+
+        // обработка нажатия кнопки "получить ответ"
+        document.getElementById("getBtn").addEventListener('click', async() => {
+            const Question = document.getElementById("idQuestion").value;
+            // Проверяем, пустое ли поле ввода
+            if (document.getElementById("idQuestion").validity.valueMissing) {
+                // Поле пустое, отображаем ошибку
+                alert("Пожалуйста, введите вопрос");
+                return; // Прерываем выполнение функции
+            }
+            await getAnswer(Question)
+        });
+
+        // обработка нажатия кнопки "сбросить"
+        document.getElementById("resetBtn").addEventListener("click", () =>  reset());
+    </script>
+</body>
+</html>
+
